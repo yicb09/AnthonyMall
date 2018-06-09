@@ -37,7 +37,7 @@
             </table>
             <div class="block">
             <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage4"
-                :page-sizes="[100, 200, 300, 400]" :page-size="100" layout="total, sizes, prev, pager, next, jumper" :total="400">
+                :page-sizes="[10, 20, 30, 40]" :page-size="100" layout="total, sizes, prev, pager, next, jumper" :total="113">
             </el-pagination>
         </div>
         </div>
@@ -66,39 +66,40 @@ export default {
         }
     },
     methods:{
+        get_data() {
+            var _this=this;
+            var token = _this.$store.state.token;
+            $.ajax
+            ({
+                type: "GET",
+                url: "http://192.168.0.94:5050/api/v1/order_list",
+                // contentType: 'application/json; charset=utf-8',
+                data: this.data,
+                headers: {
+                    "Authorization": "Basic " + btoa(token + ":" + '')
+                },
+                success: function (res){
+                    console.log(123);
+                    console.log(res);
+                    _this.res_data = res.data;
+            
+                }
+            });
+        },
         handleSizeChange(val) {
         console.log(`每页 ${val} 条`);
       },
       handleCurrentChange(val) {
         console.log(`当前页: ${val}`);
         // console.log(data);
+        this.data['page'] =  `${val}`;
+        console.log(this.data['page']);
+        this.get_data()
         
       }
     },
     created() {
-        var data = {
-            'OrderID': 307,
-            'page': 1, //当前页
-            'per_page': 10 //每页显示数量
-        };
-        var _this=this;
-        var token = _this.$store.state.token;
-        $.ajax
-        ({
-          type: "GET",
-          url: "http://192.168.0.94:5050/api/v1/order_list",
-          // contentType: 'application/json; charset=utf-8',
-          data: data,
-          headers: {
-            "Authorization": "Basic " + btoa(token + ":" + '')
-          },
-          success: function (res){
-            console.log(123);
-            console.log(res);
-            _this.res_data = res.data;
-            
-          }
-        });
+        this.get_data()
         
     }
 }

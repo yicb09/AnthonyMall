@@ -24,6 +24,15 @@
                                 <td>{{item.StyleNo}}</td>
                             </tr>
                         </table>
+                        <!-- 选择size -->
+                        <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
+                        <div style="margin: 15px 0;"></div>
+                        <el-checkbox-group v-model="checkedSizes" @change="handleCheckedSizesChange" >
+                            <el-checkbox v-for="size in sizes" :label="size" :key="size">{{size}}</el-checkbox>
+                        </el-checkbox-group>
+                        
+                        <el-input-number size="mini" v-model="num1" @change="handleChange" :min="0" :max="20" label="描述文字"></el-input-number>
+                        <button @click="submitOrder()">提交订单</button>
                     </div>
                 </li>
             </ul>
@@ -33,12 +42,20 @@
 
 <script>
 import Common from "./Common.vue";
+const sizeOptions = ['L', 'M', 'S', 'XS'];
 export default {
     components:{
         Common
     },
     data(){
         return{
+            checkAll: false,
+            checkedSizes: ['M'],
+            sizes: sizeOptions,
+            isIndeterminate: true,
+
+            num1: 1,
+
             res:{},
             res_data:[],
             //数据接口所需的查询字符串
@@ -51,6 +68,19 @@ export default {
                 'page': 1, //当前页
                 "per_page": 10 //每页显示数量
             },
+            post_data:{
+                "order_details":[
+                    {
+                        "Count": 10,
+                        "Size": 129,
+                    },
+                    {
+                        "Count": 99,
+                        "Size": 130,
+                        "其他": "xxx",  //可以加任何自定义参数
+                    },
+                ]
+            },
             // 商品列表数据
             goodsList: [],
             // 数据总量
@@ -58,8 +88,51 @@ export default {
         }
     },
     methods: {
- 
+        handleCheckAllChange(val) {
+        this.checkedSizes = val ? sizeOptions : [];
+        this.isIndeterminate = false;
+      },
+      
+      handleCheckedSizesChange(value) {
+        let checkedCount = value.length;
+        this.checkAll = checkedCount === this.sizes.length;
+        this.isIndeterminate = checkedCount > 0 && checkedCount < this.sizes.length;
+        console.log(value);
+        console.log(checkedCount);
+        console.log(this.checkAll);
+        console.log(this.isIndeterminate);
         
+        
+        
+      },
+      getSize() {
+          console.log(333);
+          
+      },
+
+      handleChange(value) {
+        console.log(value);
+      },
+    
+    //确认上传
+      submitOrder(){
+          console.log(111);
+           var _this=this;
+            var token = _this.$store.state.token;
+          $.ajax({
+            type: "POST",
+            url: "http://192.168.0.94:5050/api/v1/order_list",
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(this.post_data),
+            headers: {
+                "Authorization": "Basic " + btoa(token + ":" + '')
+            },
+            success: function (detail_res){
+                console.log(detail_res);
+                
+            }
+        })
+      }
       },
       watch:{
         //   res_data:{
@@ -75,8 +148,6 @@ export default {
       },
 
     created (){
-        
-        // this.getImg()       //定义方法
         var data = {
             'page': 1, //当前页        
             'per_page': 10 //每页显示数量
@@ -84,7 +155,8 @@ export default {
         var _this=this;
         var token = _this.$store.state.token;
         // console.log(_this.$store.state.token);
-              
+
+        //请求样衣数据     
         $.ajax
         ({
           type: "GET",
@@ -98,12 +170,14 @@ export default {
             // alert('成功'); 
             console.log(res);
             console.log(res.data);
-            // _this.res = res;
             _this.res_data = res.data;
             // console.log(_this.res_data[0].pictures[0].URL);
             
           }
         });
+        
+        
+        
       },
     mounted(){
 
